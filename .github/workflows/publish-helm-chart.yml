@@ -28,6 +28,9 @@ jobs:
         with:
           version: v3.8.1
 
+      - name: Add helm repositories
+        run: "helm repo add bitnami https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.4.0
         with:
