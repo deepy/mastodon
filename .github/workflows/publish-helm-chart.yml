@@ -36,5 +36,6 @@ jobs:
         with:
           charts_dir: "."
           charts_repo_url: "https://deepy.github.io/mastodon-charts"
+          config: .cr.yaml
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
