@@ -307,3 +307,8 @@ data:
   LDAP_UID_CONVERSION_REPLACE: {{ .Values.externalAuth.ldap.uid_conversion.replace }}
   {{- end }}
   {{- end }}
+  {{- if (and .Values.mastodon.metrics.statsd.enabled .Values.mastodon.metrics.statsd.exporter) }}
+  STATSD_ADDR: {{ include "mastodon.fullname" . }}-statsd-exporter:9125
+  {{- else if .Values.mastodon.metrics.statsd.enabled }}
+  STATSD_ADDR: {{ .Values.mastodon.metrics.statsd.address }}
+  {{- end }}

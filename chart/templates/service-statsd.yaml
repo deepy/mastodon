@@ -1,0 +1,22 @@
+{{- if (and .Values.mastodon.metrics.statsd.enabled .Values.mastodon.metrics.statsd.exporter) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mastodon.fullname" . }}-statsd-exporter
+  labels:
+    {{- include "mastodon.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics
+spec:
+  ports:
+    - port: 9102
+      targetPort: web
+      protocol: TCP
+      name: web
+    - port: 9125
+      targetPort: metrics
+      protocol: UDP
+      name: metrics
+  selector:
+      {{- include "mastodon.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: metrics
+{{- end }}

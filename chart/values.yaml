@@ -100,6 +100,16 @@ mastodon:
     # base_url: wws://streaming.example.com
   web:
     port: 3000
+  
+  metrics:
+    statsd:
+      # Enabled the statsd metrics
+      enabled: false
+      # Deploy the the prometheus statsd-exporter into the cluster
+      exporter: false
+      # Enable statsd publishing to a specific address
+      # ignored if the exporter is enabled
+      address: statsd:9125
 
 ingress:
   enabled: true

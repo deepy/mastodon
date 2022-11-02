@@ -1,0 +1,74 @@
+{{- if (and .Values.mastodon.metrics.statsd.enabled .Values.mastodon.metrics.statsd.exporter) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mastodon.fullname" . }}-statsd-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "mastodon.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: metrics
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+        # roll the pods to pick up any db migrations
+        rollme: {{ randAlphaNum 5 | quote }}
+    {{- end }}
+      labels:
+        {{- include "mastodon.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: metrics
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "mastodon.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: "exporter"
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "prom/statsd-exporter"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["--statsd.mapping-config=/conf/mappings.config"]
+          volumeMounts:
+          - name: config-volume
+            mountPath: /conf
+          ports:
+          - containerPort: 9125
+            name: metrics
+            protocol: UDP
+          - containerPort: 9102
+            name: web
+            protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: web
+          # readinessProbe:
+          #   httpGet:
+          #     path: /health
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "mastodon.fullname" . }}-statsd
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

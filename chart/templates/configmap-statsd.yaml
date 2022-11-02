@@ -1,0 +1,61 @@
+{{- if (and .Values.mastodon.metrics.statsd.enabled .Values.mastodon.metrics.statsd.exporter) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mastodon.fullname" . }}-statsd
+  labels:
+    {{- include "mastodon.labels" . | nindent 4 }}
+data:
+  mappings.config: |
+    mappings:
+    # This one works great
+    - match: "Mastodon.*.sidekiq.queues.*.*"
+      name: "Mastodon_sidekiq_queues_${3}"
+      labels:
+        environment: "$1"
+        queue: "$2"
+    # Not optimal but I guess it works
+    - match: "Mastodon\\.(\\w+)\\.cache\\.(\\w+)\\.(.*)"
+      match_type: regex
+      name: "Mastodon_cache_${3}"
+      labels:
+        # These are not the correct labels
+        environment: "$1"
+        type: "$2"
+    #  Random experiments
+    # - match: "Mastodon\\.(\\w+)\\.web\\.(.*)\\.duration"
+    #   match_type: regex
+    #   name: "Mastodon_${3}"
+    #   labels:
+    #     environment: "$1"
+    #     path: "$2"
+    # - match: "Mastodon\\.(\\w+)\\.web\\.(ActivityPub|Admin)\\.(\\w+)\\.(.*)"
+    #   match_type: regex
+    #   name: "Mastodon_${4}"
+    #   labels:
+    #     environment: "$1"
+    #     area: "$2"
+    #     controller: "$3"
+    # # Mastodon_web_Api_V1_Admin_DimensionsController_create_html_db_time
+    # - match: "Mastodon\\.(\\w+)\\.web\\.(Api\\.V\\d+)\\.(\\w+)\\.(\\w+)\\.((show|create|index)\\.html.*)\\.(.*)"
+    #   match_type: regex
+    #   name: "Mastodon_${5}_$6"
+    #   labels:
+    #     environment: "$1"
+    #     api: "$2"
+    #     area: "$3"
+    #     controller: "$4"
+    # - match: "Mastodon\\.(\\w+)\\.web\\.(ActivityPub|Admin)\\.(\\w+)\\.(.*)"
+    #   match_type: regex
+    #   name: "Mastodon_${4}"
+    #   labels:
+    #     environment: "$1"
+    #     area: "$2"
+    #     controller: "$3"
+    # Catch-all
+    - match: "Mastodon\\.(\\w+)\\.(.*)"
+      match_type: regex
+      name: "Mastodon_${2}"
+      labels:
+        environment: "$1"
+{{- end }}
